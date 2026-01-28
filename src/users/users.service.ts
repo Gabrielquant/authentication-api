@@ -2,6 +2,8 @@ import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/createuser.dto';
 import { Role } from '@prisma/client';
+import { UpdateUserDto } from './dto/updateuser.dto';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UsersService {
@@ -18,10 +20,46 @@ export class UsersService {
       });
 
       return newUser;
-    } catch (error) {
-      console.log(error);
-
+    } catch {
       throw new HttpException('Tente outro email.', HttpStatus.CONFLICT);
     }
+  }
+
+  async findOne(email: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { email: email, active: true },
+    });
+
+    if (!user) {
+      throw new HttpException('Credenciais invalidas', HttpStatus.BAD_REQUEST);
+    }
+
+    return user;
+  }
+
+  async updateUser(updateUserDto: UpdateUserDto, userId: string) {
+    const user = await this.prisma.user.findFirst({ where: { id: userId } });
+
+    const dataUser: { email?: string; passwordHash?: string } = {
+      email: updateUserDto.email ? updateUserDto.email : user?.email,
+    };
+
+    if (updateUserDto?.password) {
+      const passwordHash = await argon2.hash(updateUserDto.password);
+      dataUser['passwordHash'] = passwordHash;
+    }
+
+    const updateUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: dataUser?.email,
+        passwordHash: dataUser?.passwordHash
+          ? dataUser?.passwordHash
+          : user?.passwordHash,
+      },
+      select: { email: true },
+    });
+
+    return updateUser;
   }
 }
