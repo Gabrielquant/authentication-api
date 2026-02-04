@@ -16,11 +16,11 @@ datasource db {
 model User {
   id String @id @default(uuid())
   email String @unique
-  passwordHash String
+  passwordHash String @map("password_hash")
   role Role @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime? @updatedAt
-  deletedAt DateTime? 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
   active  Boolean  @default(true)
 } 
 

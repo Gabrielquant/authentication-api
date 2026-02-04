@@ -4,6 +4,7 @@ import { CreateUserDto } from './dto/createuser.dto';
 import { Role } from '@prisma/client';
 import { UpdateUserDto } from './dto/updateuser.dto';
 import * as argon2 from 'argon2';
+import { PayloadDto } from 'src/auth/dto/payload.dto';
 
 @Injectable()
 export class UsersService {
@@ -61,5 +62,11 @@ export class UsersService {
     });
 
     return updateUser;
+  }
+
+  async getUser(payloadToken: PayloadDto){
+    const user = await this.prisma.user.findFirst({where: {id: payloadToken.sub},select:{id: true, email:true,role:true}})
+
+    return user
   }
 }
