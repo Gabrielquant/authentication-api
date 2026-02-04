@@ -24,8 +24,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
 		});
 	}
 
-	validate(req: Request, payload: PayloadDto) {
-		console.log("refresh-guard");
+	async validate(req: Request, payload: PayloadDto) {
 		const refreshToken = req.headers.authorization?.split(" ")[1];
 		return { ...payload, refreshToken };
 	}

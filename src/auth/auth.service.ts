@@ -59,7 +59,7 @@ export class AuthService {
 			};
 		} catch (error) {
 			console.log(error);
-			throw new HttpException("Tente outro email.", HttpStatus.CONFLICT);
+			throw new HttpException("Credenciais invalidas.", HttpStatus.CONFLICT);
 		}
 	}
 

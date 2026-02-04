@@ -65,8 +65,8 @@ export class UsersService {
 	}
 
 	async getUser(payloadToken: PayloadDto) {
-		const user = await this.prisma.user.findFirst({
-			where: { id: payloadToken.sub },
+		console.log(payloadToken);
+		const user = await this.prisma.user.findMany({
 			select: { id: true, email: true, role: true },
 		});
 

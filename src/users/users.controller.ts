@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
-import { PayloadDto } from "src/auth/dto/payload.dto";
+import { CurrentUser } from "src/auth/decorator/current-user.decorator";
+import { Roles } from "src/auth/decorator/roles.decorator";
+import { PayloadDto, Role } from "src/auth/dto/payload.dto";
 import { JwtAuthGuard } from "src/auth/guard/auth-access-token.guard";
-import { CurrentUser } from "src/auth/param/current-user.decorator";
-import { TokenPayloadParam } from "src/auth/param/token-payload.parms";
+import { RolesGuard } from "src/auth/guard/roles.guard";
 import { UpdateUserDto } from "./dto/updateuser.dto";
 import { UsersService } from "./users.service";
 
@@ -14,14 +15,15 @@ export class UsersController {
 	@Post("update")
 	updateUser(
 		@Body() updateUserDto: UpdateUserDto,
-		@CurrentUser("userId") userId: string,
+		@CurrentUser("sub") userId: string,
 	) {
 		return this.userService.updateUser(updateUserDto, userId);
 	}
 
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard, RolesGuard)
+	@Roles(Role.ADMIN)
 	@Get()
-	getUser(@TokenPayloadParam() payloadDto: PayloadDto) {
+	getUser(@CurrentUser() payloadDto: PayloadDto) {
 		return this.userService.getUser(payloadDto);
 	}
 }
