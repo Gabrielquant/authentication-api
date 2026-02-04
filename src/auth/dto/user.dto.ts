@@ -1,7 +1,7 @@
-import { $Enums } from '@prisma/client';
+import { $Enums } from "@prisma/client";
 
 export class UserDto {
-  id: string;
-  email: string;
-  role: $Enums.Role;
+	id: string;
+	email: string;
+	role: $Enums.Role;
 }
