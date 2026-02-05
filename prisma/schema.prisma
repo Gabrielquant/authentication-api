@@ -18,14 +18,38 @@ model User {
   email String @unique
   passwordHash String @map("password_hash")
   role Role @default(USER)
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  tokenVersion Int @default(0) @map("token_version")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   active  Boolean  @default(true)
-} 
 
-enum Role{
+  userToken UserToken[]
+} 
+model UserToken {
+  id String @id @default(uuid())
+
+  userId String @unique @map("user_id")
+  user   User @relation(fields: [userId], references: [id])
+
+  type      UserTokenType
+  tokenHash String @map("token_hash")
+  expiresAt DateTime? @map("expires_at")
+  usedAt DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  sentTo String
+
+  @@index([userId, type])
+ }
+
+enum Role {
   USER
   ADMIN
   AUDITOR
+}
+
+enum UserTokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
 }

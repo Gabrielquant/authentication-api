@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import * as argon2 from "argon2";
 import { PayloadDto } from "src/auth/dto/payload.dto";
+import { UserDto } from "src/auth/dto/user.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateUserDto } from "./dto/createuser.dto";
 import { UpdateUserDto } from "./dto/updateuser.dto";
@@ -26,16 +27,24 @@ export class UsersService {
 		}
 	}
 
-	async findOne(email: string) {
-		const user = await this.prisma.user.findFirst({
-			where: { email: email, active: true },
-		});
+	async findOneWithEmail(email: string) {
+		try {
+			const user = await this.prisma.user.findFirst({
+				where: { email: email, active: true },
+				select: { id: true, email: true, role: true, passwordHash: true },
+			});
 
-		if (!user) {
+			if (!user) {
+				throw new HttpException(
+					"Credenciais invalidas",
+					HttpStatus.BAD_REQUEST,
+				);
+			}
+
+			return user;
+		} catch (_error) {
 			throw new HttpException("Credenciais invalidas", HttpStatus.BAD_REQUEST);
 		}
-
-		return user;
 	}
 
 	async updateUser(updateUserDto: UpdateUserDto, userId: string) {
@@ -71,5 +80,38 @@ export class UsersService {
 		});
 
 		return user;
+	}
+
+	async findResetPasswordToken(userId: string) {
+		try {
+			const findTokenUser = await this.prisma.userToken.findFirst({
+				where: { userId: userId, type: "PASSWORD_RESET" },
+			});
+
+			return findTokenUser;
+		} catch (_error) {
+			throw new HttpException("Enviado com sucesso", HttpStatus.OK);
+		}
+	}
+
+	async saveUserToken(user: UserDto, tokenHash: string) {
+		return this.prisma.userToken.create({
+			data: {
+				tokenHash: tokenHash,
+				type: "PASSWORD_RESET",
+				sentTo: user.email,
+				userId: user.id,
+			},
+		});
+	}
+
+	async updateUserToken(user: UserDto, tokenHash: string) {
+		let version:number = 1;
+
+		await this.prisma.user.update({where:{id: user.id}, data:{tokenVersion:version++}})
+		await this.prisma.userToken.update({
+			where: { userId: user.id },
+			data: { tokenHash: tokenHash },
+		});
 	}
 }
