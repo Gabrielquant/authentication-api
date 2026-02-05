@@ -4,9 +4,9 @@ import path from "node:path";
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as argon2 from "argon2";
-import { UsersService } from "src/users/users.service";
+import { UsersService } from "src/module/users/users.service";
+import { newUserToken } from "../../common/token.util";
 import { CreateUserDto } from "../users/dto/createuser.dto";
-import { newUserToken } from "./common/token.util";
 import { LoginDto } from "./dto/login.dto";
 import { PayloadDto } from "./dto/payload.dto";
 import { ResetPasswordRequest } from "./dto/reset-password-request.dto";
@@ -115,26 +115,27 @@ export class AuthService {
 
 	async passwordReset(ResetPasswordRequest: ResetPasswordRequest) {
 		try {
-					const user = await this.userServices.findOneWithEmail(
-			ResetPasswordRequest.email,
-		);
+			const user = await this.userServices.findOneWithEmail(
+				ResetPasswordRequest.email,
+			);
 
-		const token = await this.userServices.findResetPasswordToken(user.id);
+			const token = await this.userServices.findResetPasswordToken(user.id);
 
-		let	newToken = newUserToken();
+			let newToken = newUserToken();
 
-		if (!token?.tokenHash) {
-			await this.userServices.saveUserToken(user, newToken);
-		} else {
-			newToken = newUserToken();
-			await this.userServices.updateUserToken(user, newToken);
-		}
+			if (!token?.tokenHash) {
+				await this.userServices.saveUserToken(user, newToken);
+			} else {
+				newToken = newUserToken();
+				await this.userServices.updateUserToken(user, newToken);
+			}
 
-		return {message: "Sucesso ao realizar o pedido de reset, voce receberá um email com link para criar a nova senha."};
+			return {
+				message:
+					"Sucesso ao realizar o pedido de reset, voce receberá um email com link para criar a nova senha.",
+			};
 		} catch (_error) {
 			throw new HttpException("Enviado com sucesso", HttpStatus.OK);
 		}
-
-
 	}
 }

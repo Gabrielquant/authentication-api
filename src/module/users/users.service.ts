@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import * as argon2 from "argon2";
-import { PayloadDto } from "src/auth/dto/payload.dto";
-import { UserDto } from "src/auth/dto/user.dto";
-import { PrismaService } from "src/prisma/prisma.service";
+import { PayloadDto } from "src/module/auth/dto/payload.dto";
+import { UserDto } from "src/module/auth/dto/user.dto";
+import { PrismaService } from "src/module/prisma/prisma.service";
 import { CreateUserDto } from "./dto/createuser.dto";
 import { UpdateUserDto } from "./dto/updateuser.dto";
 
@@ -106,9 +106,12 @@ export class UsersService {
 	}
 
 	async updateUserToken(user: UserDto, tokenHash: string) {
-		let version:number = 1;
+		let version: number = 1;
 
-		await this.prisma.user.update({where:{id: user.id}, data:{tokenVersion:version++}})
+		await this.prisma.user.update({
+			where: { id: user.id },
+			data: { tokenVersion: version++ },
+		});
 		await this.prisma.userToken.update({
 			where: { userId: user.id },
 			data: { tokenHash: tokenHash },
