@@ -1,8 +1,9 @@
-import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { JwtRefreshGuard } from "../../common/guard/auth-refresh-token.guard";
 import { CreateUserDto } from "../users/dto/createuser.dto";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
+import { ResetUserPasswordDto } from "./dto/reset-password.dto";
 import { ResetPasswordRequest } from "./dto/reset-password-request.dto";
 
 @Controller("auth")
@@ -25,8 +26,13 @@ export class AuthController {
 		return this.authService.refreshTokens(req.user.email);
 	}
 
-	@Post("reset/password")
-	resetPassword(@Body() resetPasswordRequest: ResetPasswordRequest) {
-		return this.authService.passwordReset(resetPasswordRequest);
+	@Post("request/reset/password")
+	requestResetPassword(@Body() resetPasswordRequest: ResetPasswordRequest) {
+		return this.authService.requestResetPassword(resetPasswordRequest);
+	}
+
+	@Patch("reset/password")
+	resetPassword(@Body() resetUser: ResetUserPasswordDto) {
+		return this.authService.resetPassword(resetUser);
 	}
 }

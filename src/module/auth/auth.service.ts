@@ -4,11 +4,13 @@ import path from "node:path";
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as argon2 from "argon2";
+import { sendEmail } from "src/jobs/mail/mail.service";
 import { UsersService } from "src/module/users/users.service";
 import { newUserToken } from "../../common/token.util";
 import { CreateUserDto } from "../users/dto/createuser.dto";
 import { LoginDto } from "./dto/login.dto";
 import { PayloadDto } from "./dto/payload.dto";
+import { ResetUserPasswordDto } from "./dto/reset-password.dto";
 import { ResetPasswordRequest } from "./dto/reset-password-request.dto";
 import { UserDto } from "./dto/user.dto";
 
@@ -113,7 +115,7 @@ export class AuthService {
 		return tokens;
 	}
 
-	async passwordReset(ResetPasswordRequest: ResetPasswordRequest) {
+	async requestResetPassword(ResetPasswordRequest: ResetPasswordRequest) {
 		try {
 			const user = await this.userServices.findOneWithEmail(
 				ResetPasswordRequest.email,
@@ -130,12 +132,22 @@ export class AuthService {
 				await this.userServices.updateUserToken(user, newToken);
 			}
 
-			return {
-				message:
-					"Sucesso ao realizar o pedido de reset, voce receberá um email com link para criar a nova senha.",
-			};
+			return await sendEmail(ResetPasswordRequest.email);
 		} catch (_error) {
 			throw new HttpException("Enviado com sucesso", HttpStatus.OK);
+		}
+	}
+
+	async resetPassword(resetUser: ResetUserPasswordDto) {
+		try {
+			const userId = await this.userServices.verifyUserToken(resetUser.resetToken);
+
+			await this.userServices.updateUser(resetUser.user, userId);
+
+			return new HttpException("Senha alterada com sucesso", HttpStatus.OK);
+		} catch (_error) {
+			console.log(_error);
+			throw new HttpException("Credenciais invalidas", HttpStatus.BAD_REQUEST);
 		}
 	}
 }

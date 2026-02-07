@@ -20,3 +20,19 @@ export function newUserToken(){
 	const newToken = hashToken(rawToken);
   return newToken
 }
+
+function requiredEnv(name: string): number {
+	const value = process.env[name];
+	if (!value) {
+		throw new Error(`Missing required environment variable: ${name}`);
+	}
+	return Number(value);
+}
+
+export function generateTokenExpires() {
+  const resetPasswordTtl = requiredEnv("RESET_PASSWORD_TOKEN_TTL_MIN")
+
+  const tokenExpires = Date.now() + resetPasswordTtl
+
+  return tokenExpires
+}

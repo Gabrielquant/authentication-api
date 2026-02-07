@@ -1,9 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import * as argon2 from "argon2";
+import { generateTokenExpires } from "src/common/token.util";
 import { PayloadDto } from "src/module/auth/dto/payload.dto";
 import { UserDto } from "src/module/auth/dto/user.dto";
 import { PrismaService } from "src/module/prisma/prisma.service";
+import { UserTokenResetPasswordDto } from "../auth/dto/token-reset-password.dto";
 import { CreateUserDto } from "./dto/createuser.dto";
 import { UpdateUserDto } from "./dto/updateuser.dto";
 
@@ -95,17 +97,22 @@ export class UsersService {
 	}
 
 	async saveUserToken(user: UserDto, tokenHash: string) {
+		const tokenExpires = generateTokenExpires();
+
 		return this.prisma.userToken.create({
 			data: {
 				tokenHash: tokenHash,
 				type: "PASSWORD_RESET",
 				sentTo: user.email,
 				userId: user.id,
+				expiresAt: tokenExpires,
 			},
 		});
 	}
 
 	async updateUserToken(user: UserDto, tokenHash: string) {
+		const tokenExpires = generateTokenExpires();
+
 		let version: number = 1;
 
 		await this.prisma.user.update({
@@ -114,7 +121,26 @@ export class UsersService {
 		});
 		await this.prisma.userToken.update({
 			where: { userId: user.id },
-			data: { tokenHash: tokenHash },
+			data: { tokenHash: tokenHash, expiresAt: tokenExpires },
 		});
+	}
+
+	async verifyUserToken(userToken: UserTokenResetPasswordDto) {
+		const expiredDate = await this.prisma.userToken.findFirst({
+			where: { tokenHash: userToken.token },
+			select: { expiresAt: true, userId: true },
+		});
+
+		if (!expiredDate?.expiresAt) {
+			throw new HttpException("Token não existe", HttpStatus.BAD_REQUEST);
+		}
+
+		const nowDate = Date.now();
+
+		if (expiredDate.expiresAt <= nowDate) {
+			return expiredDate.userId;
+		} else {
+			throw new HttpException("Token expirado", HttpStatus.BAD_REQUEST);
+		}
 	}
 }
