@@ -115,13 +115,15 @@ export class UsersService {
 
 		let version: number = 1;
 
-		await this.prisma.user.update({
-			where: { id: user.id },
-			data: { tokenVersion: version++ },
-		});
-		await this.prisma.userToken.update({
-			where: { userId: user.id },
-			data: { tokenHash: tokenHash, expiresAt: tokenExpires },
+		await this.prisma.$transaction(async (tx) => {
+			await tx.user.update({
+				where: { id: user.id },
+				data: { tokenVersion: version++ },
+			});
+			await tx.userToken.update({
+				where: { userId: user.id },
+				data: { tokenHash: tokenHash, expiresAt: tokenExpires },
+			});
 		});
 	}
 
