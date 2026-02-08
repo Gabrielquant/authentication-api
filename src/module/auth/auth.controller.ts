@@ -1,4 +1,5 @@
 import { Body, Controller, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import { JwtRefreshGuard } from "../../common/guard/auth-refresh-token.guard";
 import { CreateUserDto } from "../users/dto/createuser.dto";
 import { AuthService } from "./auth.service";
@@ -15,6 +16,7 @@ export class AuthController {
 		return this.authService.register(createUserDto);
 	}
 
+	@Throttle({default: { limit: 3, ttl: 60000 }})
 	@Post("login")
 	logIn(@Body() logInDto: LoginDto) {
 		return this.authService.generateJwt(logInDto);
@@ -26,11 +28,13 @@ export class AuthController {
 		return this.authService.refreshTokens(req.user.email);
 	}
 
+	@Throttle({default: { limit: 3, ttl: 60000 }})
 	@Post("request/reset/password")
 	requestResetPassword(@Body() resetPasswordRequest: ResetPasswordRequest) {
 		return this.authService.requestResetPassword(resetPasswordRequest);
 	}
 
+	@Throttle({default: { limit: 3, ttl: 60000 }})
 	@Patch("reset/password")
 	resetPassword(@Body() resetUser: ResetUserPasswordDto) {
 		return this.authService.resetPassword(resetUser);

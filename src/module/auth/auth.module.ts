@@ -9,7 +9,7 @@ import { AuthAccessModule } from "./token/auth-access.module";
 import { AuthRefreshModule } from "./token/auth-refresh.module";
 
 @Module({
-	imports: [UsersModule, PassportModule, AuthAccessModule, AuthRefreshModule],
+	imports: [UsersModule, PassportModule, AuthAccessModule, AuthRefreshModule,],
 	providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
 	controllers: [AuthController],
 	exports: [AuthService],
