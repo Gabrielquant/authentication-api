@@ -32,8 +32,21 @@ export class AuthService {
 
 			return newUser;
 		} catch (error) {
-			console.log(error);
-			throw new HttpException("Credenciais Invalidas", HttpStatus.CONFLICT);
+			if (error instanceof Error) {
+				switch (error.message) {
+					case "FAILED_TO_CREATE_USER":
+						throw new HttpException(
+							"Credencias Invalidas.",
+							HttpStatus.BAD_REQUEST,
+						);
+					case "EMAIL_ALREADY_EXISTS":
+						throw new HttpException(
+							"Usuaruio ou Senha invalidas.",
+							HttpStatus.BAD_REQUEST,
+						);
+				}
+			}
+			throw new HttpException("Credencias Invalidas.", HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -49,10 +62,7 @@ export class AuthService {
 			const { accessToken, refreshToken } = await this.getTokens(user);
 
 			if (!passwordValid) {
-				throw new HttpException(
-					"Credenciais invalidas",
-					HttpStatus.BAD_REQUEST,
-				);
+				throw new Error("INCORRECT_PASSWORD");
 			}
 
 			return {
@@ -62,15 +72,41 @@ export class AuthService {
 				refreshToken: refreshToken,
 			};
 		} catch (error) {
-			console.log(error);
-			throw new HttpException("Credenciais invalidas.", HttpStatus.CONFLICT);
+			if (error instanceof Error) {
+				switch (error.message) {
+					case "USER_NOT_FOUND":
+						throw new HttpException(
+							"Usuaruio não encontrado.",
+							HttpStatus.BAD_REQUEST,
+						);
+					case "INCORRECT_PASSWORD":
+						throw new HttpException(
+							"Usuaruio ou Senha invalidas.",
+							HttpStatus.BAD_REQUEST,
+						);
+				}
+			}
+			throw new HttpException("Credencias Invalidas.", HttpStatus.BAD_REQUEST);
 		}
 	}
 
 	async isValid(payLoad: PayloadDto) {
-		const findUser = await this.userServices.findOneWithEmail(payLoad.email);
+		try {
+			const findUser = await this.userServices.findOneWithEmail(payLoad.email);
 
-		return findUser;
+			return findUser;
+		} catch (error) {
+			if (error instanceof Error) {
+				switch (error.message) {
+					case "USER_NOT_FOUND":
+						throw new HttpException(
+							"Usuaruio não encontrado.",
+							HttpStatus.BAD_REQUEST,
+						);
+				}
+			}
+			throw new HttpException("Token não é valido.", HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	async getTokens(userDto: UserDto) {
@@ -108,11 +144,24 @@ export class AuthService {
 	}
 
 	async refreshTokens(userEmail: string) {
-		const user = await this.userServices.findOneWithEmail(userEmail);
+		try {
+			const user = await this.userServices.findOneWithEmail(userEmail);
 
-		const tokens = await this.getTokens(user);
+			const tokens = await this.getTokens(user);
 
-		return tokens;
+			return tokens;
+		} catch (error) {
+			if (error instanceof Error) {
+				switch (error.message) {
+					case "TOKEN_NOT_FOUND":
+						throw new HttpException("Token inválido.", HttpStatus.BAD_REQUEST);
+				}
+			}
+			throw new HttpException(
+				"Não foi realizar o refresh de token.",
+				HttpStatus.BAD_REQUEST,
+			);
+		}
 	}
 
 	async requestResetPassword(ResetPasswordRequest: ResetPasswordRequest) {
@@ -133,21 +182,60 @@ export class AuthService {
 			}
 
 			return await sendEmail(ResetPasswordRequest.email);
-		} catch (_error) {
-			throw new HttpException("Enviado com sucesso", HttpStatus.OK);
+		} catch (error) {
+			if (error instanceof Error) {
+				switch (error.message) {
+					case "TOKEN_NOT_FOUND":
+						throw new HttpException("Token inválido.", HttpStatus.BAD_REQUEST);
+
+					case "USER_NOT_FOUND":
+						throw new HttpException(
+							"Credenciais invalidas.",
+							HttpStatus.BAD_REQUEST,
+						);
+				}
+			}
+			throw new HttpException(
+				"Não foi realizar o pedido de reset de senha.",
+				HttpStatus.BAD_REQUEST,
+			);
 		}
 	}
 
 	async resetPassword(resetUser: ResetUserPasswordDto) {
 		try {
-			const userId = await this.userServices.verifyUserToken(resetUser.resetToken);
+			const userId = await this.userServices.verifyUserToken(
+				resetUser.resetToken,
+			);
 
 			await this.userServices.updateUser(resetUser.user, userId);
 
-			return new HttpException("Senha alterada com sucesso", HttpStatus.OK);
-		} catch (_error) {
-			console.log(_error);
-			throw new HttpException("Credenciais invalidas", HttpStatus.BAD_REQUEST);
+			return {
+				message: "Senha alterada com sucesso",
+			};
+		} catch (error) {
+			if (error instanceof Error) {
+				switch (error.message) {
+					case "TOKEN_EXPIRED":
+						throw new HttpException(
+							"Token expirado. Solicite um novo reset de senha.",
+							HttpStatus.BAD_REQUEST,
+						);
+
+					case "TOKEN_NOT_FOUND":
+						throw new HttpException("Token inválido.", HttpStatus.BAD_REQUEST);
+
+					case "USER_NOT_FOUND":
+						throw new HttpException(
+							"Usuário não encontrado.",
+							HttpStatus.NOT_FOUND,
+						);
+				}
+			}
+			throw new HttpException(
+				"Não foi possível redefinir a senha.",
+				HttpStatus.BAD_REQUEST,
+			);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import * as argon2 from "argon2";
 import { generateTokenExpires } from "src/common/token.util";
 import { PayloadDto } from "src/module/auth/dto/payload.dto";
@@ -24,8 +24,14 @@ export class UsersService {
 			});
 
 			return newUser;
-		} catch {
-			throw new HttpException("Tente outro email.", HttpStatus.CONFLICT);
+		} catch (error) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // unique constraint (email)
+      if (error.code === "P2002") {
+        throw new Error("EMAIL_ALREADY_EXISTS");
+      }
+    }
+    throw new Error("FAILED_TO_CREATE_USER");
 		}
 	}
 
@@ -37,10 +43,7 @@ export class UsersService {
 			});
 
 			if (!user) {
-				throw new HttpException(
-					"Credenciais invalidas",
-					HttpStatus.BAD_REQUEST,
-				);
+				throw new Error("USER_NOT_FOUND");
 			}
 
 			return user;
@@ -51,6 +54,10 @@ export class UsersService {
 
 	async updateUser(updateUserDto: UpdateUserDto, userId: string) {
 		const user = await this.prisma.user.findFirst({ where: { id: userId } });
+
+		if (!user) {
+			throw new Error("USER_NOT_FOUND");
+		}
 
 		const dataUser: { email?: string; passwordHash?: string } = {
 			email: updateUserDto.email ? updateUserDto.email : user?.email,
@@ -90,6 +97,10 @@ export class UsersService {
 				where: { userId: userId, type: "PASSWORD_RESET" },
 			});
 
+			if(!findTokenUser){
+				throw new Error("TOKEN_NOT_FOUND");
+			}
+
 			return findTokenUser;
 		} catch (_error) {
 			throw new HttpException("Enviado com sucesso", HttpStatus.OK);
@@ -99,7 +110,7 @@ export class UsersService {
 	async saveUserToken(user: UserDto, tokenHash: string) {
 		const tokenExpires = generateTokenExpires();
 
-		return this.prisma.userToken.create({
+		return await this.prisma.userToken.create({
 			data: {
 				tokenHash: tokenHash,
 				type: "PASSWORD_RESET",
@@ -134,7 +145,7 @@ export class UsersService {
 		});
 
 		if (!expiredDate?.expiresAt) {
-			throw new HttpException("Token não existe", HttpStatus.BAD_REQUEST);
+			throw new Error("TOKEN_NOT_FOUND");
 		}
 
 		const nowDate = Date.now();
@@ -142,7 +153,7 @@ export class UsersService {
 		if (expiredDate.expiresAt <= nowDate) {
 			return expiredDate.userId;
 		} else {
-			throw new HttpException("Token expirado", HttpStatus.BAD_REQUEST);
+			throw new Error("TOKEN_EXPIRED");
 		}
 	}
 }
