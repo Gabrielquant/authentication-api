@@ -41,7 +41,7 @@ export class AuthService {
 						);
 					case "EMAIL_ALREADY_EXISTS":
 						throw new HttpException(
-							"Usuaruio ou Senha invalidas.",
+							"Usuario ou Senha invalidas.",
 							HttpStatus.BAD_REQUEST,
 						);
 				}
@@ -81,7 +81,7 @@ export class AuthService {
 						);
 					case "INCORRECT_PASSWORD":
 						throw new HttpException(
-							"Usuaruio ou Senha invalidas.",
+							"Usuario ou Senha invalidas.",
 							HttpStatus.BAD_REQUEST,
 						);
 				}
@@ -100,7 +100,7 @@ export class AuthService {
 				switch (error.message) {
 					case "USER_NOT_FOUND":
 						throw new HttpException(
-							"Usuaruio não encontrado.",
+							"Usuario não encontrado.",
 							HttpStatus.BAD_REQUEST,
 						);
 				}
@@ -158,7 +158,7 @@ export class AuthService {
 				}
 			}
 			throw new HttpException(
-				"Não foi realizar o refresh de token.",
+				"Não foi possível atualizar o refresh token.",
 				HttpStatus.BAD_REQUEST,
 			);
 		}
@@ -196,7 +196,7 @@ export class AuthService {
 				}
 			}
 			throw new HttpException(
-				"Não foi realizar o pedido de reset de senha.",
+				"Não foi possivel realizar o pedido de reset de senha.",
 				HttpStatus.BAD_REQUEST,
 			);
 		}
@@ -218,7 +218,7 @@ export class AuthService {
 				switch (error.message) {
 					case "TOKEN_EXPIRED":
 						throw new HttpException(
-							"Token expirado. Solicite um novo reset de senha.",
+							"Token expirado. Solicite um novo pedido de reset de senha.",
 							HttpStatus.BAD_REQUEST,
 						);
 

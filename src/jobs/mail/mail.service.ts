@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { Resend } from "resend";
-import { SendEmailDto } from "./dto/send-email.dto";
 
 const resend = new Resend(process.env.RESEND_API);
 

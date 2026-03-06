@@ -26,12 +26,12 @@ export class UsersService {
 			return newUser;
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // unique constraint (email)
-      if (error.code === "P2002") {
-        throw new Error("EMAIL_ALREADY_EXISTS");
-      }
-    }
-    throw new Error("FAILED_TO_CREATE_USER");
+				// unique constraint (email)
+				if (error.code === "P2002") {
+					throw new Error("EMAIL_ALREADY_EXISTS");
+				}
+			}
+			throw new Error("FAILED_TO_CREATE_USER");
 		}
 	}
 
@@ -97,7 +97,7 @@ export class UsersService {
 				where: { userId: userId, type: "PASSWORD_RESET" },
 			});
 
-			if(!findTokenUser){
+			if (!findTokenUser) {
 				throw new Error("TOKEN_NOT_FOUND");
 			}
 
