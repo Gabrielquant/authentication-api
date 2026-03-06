@@ -1,98 +1,149 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Authentication API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API de autenticação construída com [NestJS](https://nestjs.com/), [Prisma](https://www.prisma.io/) e PostgreSQL. Oferece registro, login com JWT (access + refresh), atualização de perfil, recuperação de senha por e-mail e controle de acesso por roles (USER, ADMIN, AUDITOR). Documentação Swagger em `/api`.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tecnologias
 
-## Description
+- **NestJS** – framework Node.js
+- **Prisma** – ORM e migrations
+- **PostgreSQL** – banco de dados
+- **JWT** – tokens de acesso e refresh
+- **Argon2** – hash de senhas
+- **Resend** – envio de e-mails (verificação/reset de senha)
+- **Biome** – lint e formatação
+- **Swagger** – documentação da API
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Scripts do projeto
 
-```bash
-$ pnpm install
+| Script | Descrição |
+|--------|-----------|
+| `pnpm run build` | Compila o projeto (saída em `dist/`). |
+| `pnpm run start` | Inicia a aplicação em modo produção (usa o build em `dist/`). |
+| `pnpm run dev` | Inicia em modo desenvolvimento com watch (recompila ao alterar arquivos). |
+| `pnpm run start:debug` | Inicia em modo debug com watch (útil para depuração no VS Code/Cursor). |
+| `pnpm run start:prod` | Roda o binário compilado com `node dist/main` (após `build`). |
+| `pnpm run format` | Formata arquivos em `src/` e `test/` com Prettier. |
+| `pnpm run lint` | Executa o Biome para checagem de código (lint + regras). |
+| `pnpm run lint:fix` | Formata e aplica correções automáticas do Biome. |
+| `pnpm run test` | Roda os testes unitários com Jest. |
+| `pnpm run test:watch` | Roda os testes em modo watch (re-executa ao salvar). |
+| `pnpm run test:cov` | Roda os testes e gera relatório de cobertura. |
+| `pnpm run test:debug` | Roda os testes com Node em modo inspect (para debug). |
+| `pnpm run test:e2e` | Roda os testes end-to-end (config em `test/jest-e2e.json`). |
+
+---
+
+## CI (GitHub Actions)
+
+O workflow em `.github/workflows/ci.yml` é disparado em **push** e **pull request** na branch `main`:
+
+1. **Job `build`**  
+   - Checkout, setup pnpm 9 e Node 20  
+   - `pnpm install --frozen-lockfile`  
+   - `pnpm run build`  
+
+2. **Job `lint`** (depende de `build`)  
+   - Mesmo setup  
+   - `pnpm run lint`  
+
+Garante que o projeto compile e passe no lint antes de mergear.
+
+---
+
+## Rodando o projeto localmente
+
+### 1. Pré-requisitos
+
+- [Node.js](https://nodejs.org/) 20+
+- [pnpm](https://pnpm.io/) 9+
+- [Docker](https://www.docker.com/) e Docker Compose (para o PostgreSQL)
+
+### 2. Variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto. Exemplo:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/authdb"
+PORT=3000
+RESEND_API="re_xxx"                    # API key do Resend (envio de e-mail)
+TOKEN_PEPPER="uma-string-secreta"      # Usado no hash de tokens (ex.: reset de senha)
+RESET_PASSWORD_TOKEN_TTL_MIN=15       # TTL do token de reset de senha em minutos
 ```
 
-## Compile and run the project
+### 3. Chaves JWT (RS256)
+
+A API usa JWT com algoritmo RS256. Crie a pasta `keys/` na raiz e gere um par de chaves:
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+mkdir -p keys
+openssl genrsa -out keys/private.pem 2048
+openssl rsa -in keys/private.pem -pubout -out keys/public.pem
 ```
 
-## Run tests
+Os arquivos devem ser `keys/private.pem` e `keys/public.pem`.
+
+### 4. Subir o banco com Docker Compose
+
+Na raiz do repositório:
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+docker compose up -d
 ```
 
-## Deployment
+Isso sobe o PostgreSQL 15 na porta `5432`, usuário/senha `postgres`, banco `authdb`. O volume `postgres_data` persiste os dados.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 5. Instalar dependências
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 6. Gerar o Prisma Client e rodar as migrations
 
-## Resources
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+- `prisma generate` gera o client em `node_modules/@prisma/client`.  
+- `prisma migrate dev` aplica as migrations em `prisma/migrations` e mantém o banco sincronizado com o `schema.prisma`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Se for a primeira vez, `migrate dev` pode pedir um nome para a migration; você pode usar algo como `init` ou deixar o nome sugerido.
 
-## Support
+### 7. Iniciar a API
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+pnpm run dev
+```
 
-## Stay in touch
+A API sobe em `http://localhost:3000` (ou na porta definida em `PORT`). A documentação Swagger fica em:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**http://localhost:3000/api**
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Resumo dos comandos (copiar e colar)
+
+```bash
+# 1. Subir o banco
+docker compose up -d
+
+# 2. Dependências
+pnpm install
+
+# 3. Chaves JWT (se ainda não tiver keys/private.pem e keys/public.pem)
+mkdir -p keys
+openssl genrsa -out keys/private.pem 2048
+openssl rsa -in keys/private.pem -pubout -out keys/public.pem
+
+# 4. Prisma
+npx prisma generate
+npx prisma migrate dev
+
+# 5. Rodar a API
+pnpm run dev
+```
+
+Depois acesse **http://localhost:3000/api** para ver os endpoints e testar a API.
