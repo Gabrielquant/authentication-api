@@ -26,7 +26,7 @@ export class UsersController {
 	@UseGuards(JwtAuthGuard, RolesGuard)
 	@ApiBearerAuth()
 	@Roles(Role.ADMIN)
-	@ApiOperation({ summary: "Buscar todas as iformações do usuario" })
+	@ApiOperation({ summary: "Busca todas as informações do usuario" })
 	@Get()
 	getUser(@CurrentUser() payloadDto: PayloadDto) {
 		return this.userService.getUser(payloadDto);
