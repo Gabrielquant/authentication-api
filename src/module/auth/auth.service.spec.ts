@@ -3,7 +3,7 @@ import { HttpStatus } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import * as argon2 from "argon2";
-import { sendEmail } from "src/jobs/mail/mail.service";
+import { sendEmail } from "../../jobs/mail/mail.service";
 import { CreateUserDto } from "../users/dto/createuser.dto";
 import { UsersService } from "../users/users.service";
 import { AuthService } from "./auth.service";

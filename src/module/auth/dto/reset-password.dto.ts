@@ -1,6 +1,6 @@
 import { Type } from "class-transformer";
 import { ValidateNested } from "class-validator";
-import { UpdateUserDto } from "src/module/users/dto/updateuser.dto";
+import { UpdateUserDto } from "../../users/dto/updateuser.dto";
 import { UserTokenResetPasswordDto } from "./token-reset-password.dto";
 
 export class ResetUserPasswordDto {

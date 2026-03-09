@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
-import { CurrentUser } from "src/common/decorator/current-user.decorator";
-import { Roles } from "src/common/decorator/roles.decorator";
-import { JwtAuthGuard } from "src/common/guard/auth-access-token.guard";
-import { RolesGuard } from "src/common/guard/roles.guard";
-import { PayloadDto, Role } from "src/module/auth/dto/payload.dto";
+import { CurrentUser } from "../../common/decorator/current-user.decorator";
+import { Roles } from "../../common/decorator/roles.decorator";
+import { JwtAuthGuard } from "../../common/guard/auth-access-token.guard";
+import { RolesGuard } from "../../common/guard/roles.guard";
+import { PayloadDto, Role } from "../auth/dto/payload.dto";
 import { UpdateUserDto } from "./dto/updateuser.dto";
 import { UsersService } from "./users.service";
 
