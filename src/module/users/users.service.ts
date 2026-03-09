@@ -3,9 +3,9 @@ import { Prisma, Role } from "@prisma/client";
 import * as argon2 from "argon2";
 import { generateTokenExpires } from "../../common/token.util";
 import { PayloadDto } from "../auth/dto/payload.dto";
+import { UserTokenResetPasswordDto } from "../auth/dto/token-reset-password.dto";
 import { UserDto } from "../auth/dto/user.dto";
 import { PrismaService } from "../prisma/prisma.service";
-import { UserTokenResetPasswordDto } from "../auth/dto/token-reset-password.dto";
 import { CreateUserDto } from "./dto/createuser.dto";
 import { UpdateUserDto } from "./dto/updateuser.dto";
 

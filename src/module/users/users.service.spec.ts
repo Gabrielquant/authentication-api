@@ -2,9 +2,9 @@ import { HttpStatus } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Prisma, Role } from "@prisma/client";
 import * as argon2 from "argon2";
-import { PrismaService } from "../prisma/prisma.service";
 import { PayloadDto, Role as PayloadRole } from "../auth/dto/payload.dto";
 import { UserDto } from "../auth/dto/user.dto";
+import { PrismaService } from "../prisma/prisma.service";
 import { CreateUserDto } from "./dto/createuser.dto";
 import { UsersService } from "./users.service";
 
