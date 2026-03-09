@@ -196,7 +196,7 @@ describe("AuthService", () => {
 					password: "wrong",
 				}),
 			).rejects.toMatchObject({
-				message: "Usuaruio ou Senha invalidas.",
+				message: "Usuario ou Senha invalidas.",
 				status: HttpStatus.BAD_REQUEST,
 			});
 		});
@@ -247,7 +247,7 @@ describe("AuthService", () => {
 					exp: 0,
 				}),
 			).rejects.toMatchObject({
-				message: "Usuaruio não encontrado.",
+				message: "Usuario não encontrado.",
 				status: HttpStatus.BAD_REQUEST,
 			});
 		});

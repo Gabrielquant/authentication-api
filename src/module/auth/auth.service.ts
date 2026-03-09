@@ -76,7 +76,7 @@ export class AuthService {
 				switch (error.message) {
 					case "USER_NOT_FOUND":
 						throw new HttpException(
-							"Usuaruio não encontrado.",
+							"Usuario não encontrado.",
 							HttpStatus.BAD_REQUEST,
 						);
 					case "INCORRECT_PASSWORD":
