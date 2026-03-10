@@ -11,4 +11,6 @@ export function getTokenPayloadFromContext(
 	return request[REQUEST_TOKEN_PAYLOAD_NAME];
 }
 
-export const TokenPayloadParam = createParamDecorator(getTokenPayloadFromContext);
+export const TokenPayloadParam = createParamDecorator(
+	getTokenPayloadFromContext,
+);

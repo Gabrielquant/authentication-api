@@ -36,9 +36,7 @@ describe("RolesGuard", () => {
 	it("should allow when requiredRoles is empty array", () => {
 		reflector.getAllAndOverride.mockReturnValue([]);
 
-		const result = guard.canActivate(
-			createMockContext({ role: Role.USER }),
-		);
+		const result = guard.canActivate(createMockContext({ role: Role.USER }));
 
 		expect(result).toBe(true);
 	});
@@ -46,9 +44,7 @@ describe("RolesGuard", () => {
 	it("should allow when user role is in required roles", () => {
 		reflector.getAllAndOverride.mockReturnValue([Role.ADMIN, Role.USER]);
 
-		const result = guard.canActivate(
-			createMockContext({ role: Role.ADMIN }),
-		);
+		const result = guard.canActivate(createMockContext({ role: Role.ADMIN }));
 
 		expect(result).toBe(true);
 	});
@@ -56,9 +52,7 @@ describe("RolesGuard", () => {
 	it("should deny when user role is not in required roles", () => {
 		reflector.getAllAndOverride.mockReturnValue([Role.ADMIN]);
 
-		const result = guard.canActivate(
-			createMockContext({ role: Role.USER }),
-		);
+		const result = guard.canActivate(createMockContext({ role: Role.USER }));
 
 		expect(result).toBe(false);
 	});

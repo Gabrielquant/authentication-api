@@ -1,4 +1,3 @@
-import * as fs from "node:fs";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Request } from "express";
 import { AuthService } from "../auth.service";
@@ -19,10 +18,7 @@ describe("JwtRefreshStrategy", () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				JwtRefreshStrategy,
-				{ provide: AuthService, useValue: {} },
-			],
+			providers: [JwtRefreshStrategy, { provide: AuthService, useValue: {} }],
 		}).compile();
 
 		strategy = module.get<JwtRefreshStrategy>(JwtRefreshStrategy);
