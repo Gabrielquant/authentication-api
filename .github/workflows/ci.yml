@@ -81,5 +81,5 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm prisma generate
 
-      - name: Test
-        run: pnpm run test
+      - name: Test with coverage
+        run: pnpm run test:cov
